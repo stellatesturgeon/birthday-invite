@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Приглашение на день рождения</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.65), transparent 35%),
+        linear-gradient(135deg, #f2f2f2, #dedede);
+      color: #181818;
+    }
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: rgba(255,255,255,.94);
+      border-radius: 28px;
+      padding: 42px 30px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.14);
+    }
+    .emoji { font-size: 54px; margin-bottom: 10px; }
+    h1 { margin: 0 0 14px; font-size: 38px; line-height: 1.1; }
+    .lead {
+      margin: 0 auto 28px;
+      max-width: 440px;
+      font-size: 20px;
+      line-height: 1.5;
+      color: #444;
+    }
+    .info {
+      margin: 0 0 30px;
+      padding: 20px;
+      border-radius: 18px;
+      background: #f4f4f4;
+      text-align: left;
+      font-size: 18px;
+      line-height: 1.8;
+    }
+    .question { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+    .buttons { display: flex; gap: 12px; }
+    button {
+      flex: 1;
+      min-height: 58px;
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    .yes { background: #181818; color: #fff; }
+    .no { background: #e7e7e7; color: #222; }
+    #message {
+      display: none;
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 16px;
+      background: #f4f4f4;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+    .hint { margin-top: 14px; font-size: 13px; line-height: 1.4; color: #888; }
+    @media (max-width: 520px) {
+      .card { padding: 34px 22px; }
+      h1 { font-size: 32px; }
+      .lead { font-size: 18px; }
+      .buttons { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="emoji">🎉</div>
+    <h1>Привет!</h1>
+    <p class="lead">Приглашаю тебя на мой день рождения.<br>Буду рад тебя видеть!</p>
+    <div class="info">
+      📅 <strong>12.09.2026</strong><br>
+      🕓 <strong>16:00</strong><br>
+      📍 <strong>Серф-Плаза</strong>
+    </div>
+    <div class="question">Ты будешь?</div>
+    <div class="buttons" id="buttons">
+      <button class="yes" onclick="goToForm()">Пойду 🍻</button>
+      <button class="no" onclick="decline()">Не пойду 😢</button>
+    </div>
+    <div id="message">Жаль 😢<br>Надеюсь, в следующий раз получится!</div>
+    <div class="hint">При выборе «Пойду» нужно заполнить короткую форму.</div>
+  </main>
+  <script>
+    function goToForm() {
+      window.location.href = "https://forms.yandex.ru/u/6a8ef2446d2d7314a7f823da/";
+    }
+    function decline() {
+      document.getElementById("buttons").style.display = "none";
+      document.getElementById("message").style.display = "block";
+    }
+  </script>
+</body>
+</html>
