@@ -258,20 +258,26 @@
       .page { width: 100%; }
 
       .party-decor {
-        width: 46px;
-        opacity: .24;
+        z-index: 4;
+        width: 42px;
+        opacity: .78;
       }
 
-      .party-decor span { font-size: 19px; }
+      .party-decor span {
+        font-size: 21px;
+        filter: saturate(.95);
+        text-shadow: 0 3px 12px rgba(0,0,0,.55);
+      }
+
       .party-decor .d2,
       .party-decor .d4 { display: none; }
 
-      .left .d1 { left: 4px; }
-      .left .d3 { left: 1px; }
-      .left .d5 { left: 7px; }
-      .right .d1 { right: 4px; }
-      .right .d3 { right: 1px; }
-      .right .d5 { right: 7px; }
+      .left .d1 { top: 10%; left: 2px; }
+      .left .d3 { top: 49%; left: 1px; }
+      .left .d5 { top: 86%; left: 5px; }
+      .right .d1 { top: 18%; right: 2px; }
+      .right .d3 { top: 58%; right: 1px; }
+      .right .d5 { top: 90%; right: 5px; }
 
       .photo-card,
       .invite-card { border-radius: 21px; }
@@ -317,6 +323,8 @@
     }
 
     @media (max-width: 370px) {
+      .party-decor { width: 36px; opacity: .72; }
+      .party-decor span { font-size: 19px; }
       .invite-card { padding-left: 17px; padding-right: 17px; }
       .copy { font-size: 15.5px; }
     }
