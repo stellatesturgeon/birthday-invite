@@ -244,6 +244,20 @@
       line-height: 1.5;
     }
 
+    @media (min-width: 901px) {
+      .photo-card {
+        width: 620px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-photo {
+        image-rendering: -webkit-optimize-contrast;
+        filter: contrast(1.035) saturate(1.025);
+        transform: translateZ(0);
+      }
+    }
+
     @media (hover:hover) {
       button:hover { transform: translateY(-2px); }
     }
