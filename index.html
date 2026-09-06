@@ -209,6 +209,11 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    button:disabled {
+      cursor: default;
+      opacity: .65;
+    }
+
     button:active { transform: scale(.985); }
 
     .yes {
@@ -217,10 +222,69 @@
       box-shadow: 0 10px 26px rgba(205,169,103,.20);
     }
 
-    .no {
+    .no,
+    .decline-cancel {
       color: var(--text);
       background: rgba(255,255,255,.09);
       border: 1px solid rgba(255,255,255,.10);
+    }
+
+    .decline-form {
+      display: none;
+      margin-top: 14px;
+      padding: 18px;
+      border: 1px solid rgba(223,193,127,.20);
+      border-radius: 18px;
+      background: rgba(255,255,255,.055);
+    }
+
+    .decline-form.visible { display: block; }
+
+    .decline-label {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .decline-input {
+      width: 100%;
+      min-height: 54px;
+      padding: 13px 15px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 14px;
+      outline: none;
+      font: inherit;
+      font-size: 17px;
+      color: var(--text);
+      background: rgba(18,15,20,.45);
+    }
+
+    .decline-input::placeholder { color: #948b92; }
+
+    .decline-input:focus {
+      border-color: rgba(223,193,127,.65);
+      box-shadow: 0 0 0 3px rgba(223,193,127,.10);
+    }
+
+    .decline-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .decline-submit {
+      color: #211c20;
+      background: linear-gradient(135deg, #e5cc90, #cfae6c);
+    }
+
+    .decline-error {
+      min-height: 20px;
+      margin-top: 9px;
+      color: #f1aaa8;
+      font-size: 13px;
+      line-height: 1.4;
     }
 
     .hint {
@@ -259,7 +323,7 @@
     }
 
     @media (hover:hover) {
-      button:hover { transform: translateY(-2px); }
+      button:hover:not(:disabled) { transform: translateY(-2px); }
     }
 
     @media (max-width: 900px) {
@@ -332,8 +396,10 @@
       .copy-block { margin-top: 18px; padding-top: 18px; }
       .goodbye { margin-top: 25px; font-size: 23px; }
       .question { margin-top: 28px; font-size: 20px; }
-      .buttons { flex-direction: column; }
+      .buttons,
+      .decline-actions { flex-direction: column; }
       button { width: 100%; min-height: 56px; }
+      .decline-form { padding: 16px; }
     }
 
     @media (max-width: 370px) {
@@ -393,12 +459,32 @@
         <button class="yes" type="button" onclick="goToForm()">Пойду 🥂</button>
         <button class="no" type="button" onclick="decline()">Не пойду 😢</button>
       </div>
-      <div id="message">Жаль 😢 Надеюсь, в следующий раз получится!</div>
+
+      <div class="decline-form" id="declineForm">
+        <label class="decline-label" for="declineName">Как тебя зовут?</label>
+        <input
+          class="decline-input"
+          id="declineName"
+          type="text"
+          maxlength="80"
+          autocomplete="name"
+          placeholder="Напиши имя"
+        />
+        <div class="decline-actions">
+          <button class="decline-submit" id="declineSubmit" type="button" onclick="submitDecline()">Отправить</button>
+          <button class="decline-cancel" type="button" onclick="cancelDecline()">Назад</button>
+        </div>
+        <div class="decline-error" id="declineError"></div>
+      </div>
+
+      <div id="message">Жаль 😢 Спасибо, что предупредил(а)! Ответ записан.</div>
       <div class="hint">При выборе «Пойду» нужно заполнить короткую форму.</div>
     </section>
   </main>
 
   <script>
+    const DECLINE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxbd2LWxbhGIYAnNfKSSThqQ3ecEzsuVtJ0lMFo67iPFTJSW06E0-iSnbUr7A4HKP_R/exec';
+
     Promise.all([
       fetch('photo-1.b64?v=2').then(r => r.text()),
       fetch('photo-2.b64?v=2').then(r => r.text())
@@ -408,14 +494,109 @@
       document.querySelector('.photo-card').style.display = 'none';
     });
 
+    const savedDeclineName = localStorage.getItem('birthday_decline_name');
+    if (savedDeclineName) {
+      document.getElementById('declineName').value = savedDeclineName;
+    }
+
     function goToForm() {
       window.location.href = 'https://forms.yandex.ru/u/6a8ef2446d2d7314a7f823da/';
     }
 
     function decline() {
-      document.getElementById('buttons').style.display = 'none';
-      document.getElementById('message').style.display = 'block';
+      const buttons = document.getElementById('buttons');
+      const form = document.getElementById('declineForm');
+      const message = document.getElementById('message');
+
+      buttons.style.display = 'none';
+      message.style.display = 'none';
+
+      if (localStorage.getItem('birthday_decline_sent') === '1') {
+        message.textContent = 'Ответ «Не пойду» уже отправлен 💛';
+        message.style.display = 'block';
+        return;
+      }
+
+      form.classList.add('visible');
+      document.getElementById('declineError').textContent = '';
+      setTimeout(() => document.getElementById('declineName').focus(), 80);
     }
+
+    function cancelDecline() {
+      document.getElementById('declineForm').classList.remove('visible');
+      document.getElementById('declineError').textContent = '';
+      document.getElementById('buttons').style.display = 'flex';
+    }
+
+    function getDeclineResponseId() {
+      const key = 'birthday_decline_response_id';
+      let id = localStorage.getItem(key);
+
+      if (!id) {
+        const randomPart = window.crypto && crypto.randomUUID
+          ? crypto.randomUUID()
+          : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+        id = 'decline-' + randomPart;
+        localStorage.setItem(key, id);
+      }
+
+      return id;
+    }
+
+    async function submitDecline() {
+      const input = document.getElementById('declineName');
+      const submitButton = document.getElementById('declineSubmit');
+      const error = document.getElementById('declineError');
+      const name = input.value.trim();
+
+      if (!name) {
+        error.textContent = 'Напиши имя, чтобы я понимала, кто не сможет прийти.';
+        input.focus();
+        return;
+      }
+
+      error.textContent = '';
+      submitButton.disabled = true;
+      submitButton.textContent = 'Отправляю…';
+
+      const payload = {
+        response_id: getDeclineResponseId(),
+        name: name,
+        drink: 'Не пойду',
+        comment: 'Ответ с сайта-приглашения'
+      };
+
+      try {
+        await fetch(DECLINE_ENDPOINT, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          },
+          body: JSON.stringify(payload),
+          keepalive: true
+        });
+
+        localStorage.setItem('birthday_decline_name', name);
+        localStorage.setItem('birthday_decline_sent', '1');
+
+        document.getElementById('declineForm').classList.remove('visible');
+        const message = document.getElementById('message');
+        message.textContent = 'Жаль 😢 Спасибо, что предупредил(а)! Ответ записан.';
+        message.style.display = 'block';
+      } catch (e) {
+        error.textContent = 'Не получилось отправить ответ. Попробуй ещё раз.';
+        submitButton.disabled = false;
+        submitButton.textContent = 'Отправить';
+      }
+    }
+
+    document.getElementById('declineName').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitDecline();
+      }
+    });
   </script>
 </body>
 </html>
